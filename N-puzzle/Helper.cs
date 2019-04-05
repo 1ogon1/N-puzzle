@@ -14,14 +14,10 @@ namespace Npuzzle
     public static class Helper
     {
         public static Mode Mode { get; set; }
-<<<<<<< HEAD
         public static int Columns { get; set; }
         public static bool GetOut { get; set; }
-=======
-        public static int Columns { get; set; }
-        public static bool GetOut { get; set; }
->>>>>>> b3835595f101e9854e600dcbcc4be7e7ffc628c5
         public static bool Loading { get; set; }
+        public static int[] GoalState { get; set; }
 
         public static bool CheckPuzzleNumber(this int[] puzzle)
         {
@@ -55,18 +51,72 @@ namespace Npuzzle
             return false;
         }
 
-        public static int[] GetGoalState(int length)
+        public static void InitGoalState(int length)
         {
             var result = new int[length];
+            int k = 0;
 
-            result[length - 1] = 0;
+            for (int i = 0; i < length; i++) { result[i] = 0; }
 
-            for (int i = 0; i < length - 1; i++)
+            for (int i = 0; i < Columns / 2; i++)
             {
-                result[i] = i + 1;
+                //from left to right
+                for (int j = i; j < Columns; j++)
+                {
+                    if (result[j + i * Columns] == 0)
+                    {
+                        result[j + i * Columns] = ++k;
+                    }
+                }
+
+                //from up do down
+                int z = i + 1;
+                while (z < Columns)
+                {
+                    if (result[z * Columns + Columns - i - 1] == 0)
+                    {
+                        result[z * Columns + Columns - i - 1] = ++k;
+                    }
+                    z++;
+                }
+
+                //form right to left
+                for (int j = length - (Columns * i); j > length - Columns - (Columns * i); j--)
+                {
+                    if (result[j - 1] == 0)
+                    {
+                        result[j - 1] = ++k;
+                    }
+                }
+
+                //from down to up
+                z = Columns;
+                while(z > 0)
+                {
+                    if (result[z * Columns - Columns + i] == 0)
+                    {
+                        result[z * Columns - Columns + i] = ++k;
+                    }
+                    z--;
+                }
             }
 
-            return result;
+            for (int i = 0; i < length; i++)
+            {
+                if (result[i] == length)
+                {
+                    result[i] = 0;
+                }
+            }
+            //result[length - 1] = 0;
+
+            //for (int i = 0; i < length - 1; i++)
+            //{
+            //    result[i] = i + 1;
+            //}
+
+            GoalState = result;
+            new Node(GoalState).Print();
         }
 
         public static void SetResult(this List<Node> result, Node node)
@@ -99,7 +149,7 @@ namespace Npuzzle
             }
         }
 
-        public static void ToRight(this Node parent, int i, int[] goalState)
+        public static void ToRight(this Node parent, int i)
         {
             if (i % Columns < Columns - 1)
             {
@@ -108,11 +158,11 @@ namespace Npuzzle
                 copyPuzzle.Copy(parent.Puzzle);
                 copyPuzzle.Swap(i, i + 1);
 
-                parent.Children.Add(CopyNode(parent, copyPuzzle, goalState));
+                parent.Children.Add(CopyNode(parent, copyPuzzle));
             }
         }
 
-        public static void ToLeft(this Node parent, int i, int[] goalState)
+        public static void ToLeft(this Node parent, int i)
         {
             if (i % Columns > 0)
             {
@@ -121,11 +171,11 @@ namespace Npuzzle
                 copyPuzzle.Copy(parent.Puzzle);
                 copyPuzzle.Swap(i, i - 1);
 
-                parent.Children.Add(CopyNode(parent, copyPuzzle, goalState));
+                parent.Children.Add(CopyNode(parent, copyPuzzle));
             }
         }
 
-        public static void ToUp(this Node parent, int i, int[] goalState)
+        public static void ToUp(this Node parent, int i)
         {
             if (i - Columns >= 0)
             {
@@ -134,11 +184,11 @@ namespace Npuzzle
                 copyPuzzle.Copy(parent.Puzzle);
                 copyPuzzle.Swap(i, i - Columns);
 
-                parent.Children.Add(CopyNode(parent, copyPuzzle, goalState));
+                parent.Children.Add(CopyNode(parent, copyPuzzle));
             }
         }
 
-        public static void ToDown(this Node parent, int i, int[] goalState)
+        public static void ToDown(this Node parent, int i)
         {
             if (i + Columns < parent.Puzzle.Length)
             {
@@ -147,7 +197,7 @@ namespace Npuzzle
                 copyPuzzle.Copy(parent.Puzzle);
                 copyPuzzle.Swap(i, i + Columns);
 
-                parent.Children.Add(parent.CopyNode(copyPuzzle, goalState));
+                parent.Children.Add(parent.CopyNode(copyPuzzle));
             }
         }
 
@@ -167,26 +217,26 @@ namespace Npuzzle
             puzzle[from] = tmp;
         }
 
-        private static Node CopyNode(this Node parent, int[] puzzle, int[] goalState)
+        private static Node CopyNode(this Node parent, int[] puzzle)
         {
             return new Node(puzzle)
             {
                 Parent = parent,
                 g = parent.g + 1,
-                h = puzzle.GetH(goalState)
+                h = puzzle.GetH()
             };
 
         }
 
-        private static int GetH(this int[] current, int[] goalState)
+        private static int GetH(this int[] current)
         {
             var result = 0;
 
             if (Mode == Mode.Equals)
             {
-                for (int i = 0; i < goalState.Length; i++)
+                for (int i = 0; i < GoalState.Length; i++)
                 {
-                    if (current[i] != goalState[i] && goalState[i] != 0)
+                    if (current[i] != GoalState[i] && GoalState[i] != 0)
                     {
                         result++;
                     }
@@ -194,14 +244,14 @@ namespace Npuzzle
             }
             else if (Mode == Mode.Manhattan)
             {
-                for (int i = 0; i < goalState.Length; i++)
+                for (int i = 0; i < GoalState.Length; i++)
                 {
                     if (current[i] != 0)
                     {
-                        var number = current[i];
+                        var goalPosition = GetGoalPosition(current[i]);
 
-                        var correctX = (number - 1) / Columns;
-                        var correctY = (number - 1) % Columns;
+                        var correctX = goalPosition / Columns;
+                        var correctY = goalPosition % Columns;
 
                         var x = i / Columns;
                         var y = i % Columns;
@@ -212,19 +262,19 @@ namespace Npuzzle
             }
             else if (Mode == Mode.Euclidean)
             {
-                for (int i = 0; i < goalState.Length; i++)
+                for (int i = 0; i < GoalState.Length; i++)
                 {
                     if (current[i] != 0)
                     {
-                        var number = current[i];
+                        var goalPosition = GetGoalPosition(current[i]);
 
-                        var correctX = (number - 1) / Columns;
-                        var correctY = (number - 1) % Columns;
+                        var correctX = goalPosition / Columns;
+                        var correctY = goalPosition % Columns;
 
                         var x = i / Columns;
                         var y = i % Columns;
 
-                        result += (correctX - x) * (correctX - x) + (correctY - y)* (correctY - y);
+                        result += (correctX - x) * (correctX - x) + (correctY - y) * (correctY - y);
                     }
                 }
             }
@@ -235,6 +285,19 @@ namespace Npuzzle
             }
 
             return result;
+        }
+
+        private static int GetGoalPosition(int number)
+        {
+            for (int i = 0; i < GoalState.Length; i++)
+            {
+                if (GoalState[i] == number)
+                {
+                    return i;
+                }
+            }
+
+            return 0;
         }
     }
 }

@@ -84,11 +84,11 @@ namespace Npuzzle
             }
         }
 
-        public bool Goal(int[] goalState)
+        public bool Goal()
         {
-            for (int i = 0; i < goalState.Length; i++)
+            for (int i = 0; i < Helper.GoalState.Length; i++)
             {
-                if (Puzzle[i] != goalState[i]) { return false; }
+                if (Puzzle[i] != Helper.GoalState[i]) { return false; }
             }
 
             return true;
@@ -104,7 +104,7 @@ namespace Npuzzle
             return true;
         }
 
-        public void Expand(int[] goalState)
+        public void Expand()
         {
             for (int i = 0; i < Puzzle.Length; i++)
             {
@@ -115,10 +115,10 @@ namespace Npuzzle
                 }
             }
 
-            this.ToRight(X, goalState);
-            this.ToLeft(X, goalState);
-            this.ToUp(X, goalState);
-            this.ToDown(X, goalState);
+            this.ToRight(X);
+            this.ToLeft(X);
+            this.ToUp(X);
+            this.ToDown(X);
         }
     }
 }

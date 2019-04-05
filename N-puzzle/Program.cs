@@ -9,12 +9,7 @@ namespace Npuzzle
         public static void Main(string[] args)
         {
             Helper.GetOut = false;
-
-<<<<<<< HEAD
             Node puzzle = GetPuzzle(true, string.Empty, null, "Hello. First choose mode", out int mode);
-=======
-            Node puzzle = GetPuzzle(true, string.Empty, "Hello. First choose mode", out int mode);
->>>>>>> b3835595f101e9854e600dcbcc4be7e7ffc628c5
 
             if (puzzle != null)
             {
@@ -35,14 +30,12 @@ namespace Npuzzle
                     {
                         Console.WriteLine("Your puzzle");
                         puzzle.Print();
-<<<<<<< HEAD
                         Console.WriteLine("\nPress enter to start...");
-=======
-                        Console.WriteLine("Press enter to start...");
->>>>>>> b3835595f101e9854e600dcbcc4be7e7ffc628c5
                         Console.ReadLine();
 
                         var search = new Search();
+
+                        Helper.InitGoalState(puzzle.Puzzle.Length);
 
                         var start = DateTime.Now;
                         var result = search.ASrat(puzzle);
@@ -59,20 +52,15 @@ namespace Npuzzle
                 }
             }
 
-<<<<<<< HEAD
             Console.WriteLine("Thank you. Bye");
-            //Console.ReadLine();
-=======
-            Console.WriteLine("Sank you. Bye");
             Console.ReadLine();
->>>>>>> b3835595f101e9854e600dcbcc4be7e7ffc628c5
         }
 
         private static Node GetPuzzle(bool firstStep, string medthod, string useFrom, string message, out int mode)
         {
             var puzzle16_2 = new int[16]
             {
-                0, 1, 3, 4, 
+                0, 1, 3, 4,
                 5, 2, 7, 8,
                 9, 6, 10 , 12,
                 13, 14, 11, 15
@@ -129,25 +117,24 @@ namespace Npuzzle
                 5, 7, 8
             };
 
+            var puzzle9_7 = new int[9]
+            {
+                2, 3, 0,
+                1, 8, 4,
+                7, 6, 5
+            };
+
             Node puzzle = null;
             bool tryAgain = false;
 
             if (firstStep)
             {
                 Console.WriteLine($"{message}\n" +
-<<<<<<< HEAD
                                    "Available medthods is:\n" +
                                    "1 - equals current and final mode\n" +
                                    "2 - Manhattan distance\n" +
                                    "3 - Euclidean distance");
                 Console.Write("Choose medthod: ");
-=======
-                      "Available modes is:\n" +
-                      "1 - equals current and final mode\n" +
-                      "2 - Manhattan distance\n" +
-                      "3 - Euclidean distance");
-                Console.Write("Сhoose mode: ");
->>>>>>> b3835595f101e9854e600dcbcc4be7e7ffc628c5
                 medthod = Console.ReadLine();
             }
             else if (Helper.GetOut)
@@ -163,12 +150,8 @@ namespace Npuzzle
 
                 if (again == "y")
                 {
-<<<<<<< HEAD
                     puzzle = GetPuzzle(true, medthod, useFrom, "Okay. Choose mode again", out mode);
                     tryAgain = true;
-=======
-                    puzzle = GetPuzzle(true, medthod, "Okay. Choose mode again", out mode);
->>>>>>> b3835595f101e9854e600dcbcc4be7e7ffc628c5
                 }
                 else
                 {
@@ -207,15 +190,12 @@ namespace Npuzzle
                         //var root = new Node(puzzle9);
                         //var root = new Node(puzzle9_2);
                         //var root = new Node(puzzle9_3);
-<<<<<<< HEAD
                         //var root = new Node(puzzle16);
-                        var root = new Node(puzzle16_2);
-=======
-                        var root = new Node(puzzle16);
->>>>>>> b3835595f101e9854e600dcbcc4be7e7ffc628c5
+                        //var root = new Node(puzzle16_2);
                         //var root = new Node(puzzle9_4);
                         //var root = new Node(puzzle9_5);
                         //var root = new Node(puzzle9_6);
+                        var root = new Node(puzzle9_7);
 
                         puzzle = root;
                     }
@@ -316,17 +296,10 @@ namespace Npuzzle
 
         private static void PrintResult(Info result, int mode, TimeSpan time)
         {
-<<<<<<< HEAD
             //Console.WriteLine();
             //Console.Write("Do you want to print result? [y, n]: ");
 
             //var status = Console.ReadLine();
-=======
-            Console.WriteLine();
-            Console.Write("Do you want to print result? [y, n]: ");
-
-            var status = Console.ReadLine();
->>>>>>> b3835595f101e9854e600dcbcc4be7e7ffc628c5
 
             //if (status.ToLower() == "y") { Console.WriteLine("===RESULT==="); }
             Console.WriteLine("===RESULT===");

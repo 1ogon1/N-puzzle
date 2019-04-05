@@ -11,13 +11,12 @@ namespace Npuzzle
             Info result = new Info();
             List<Node> open = new List<Node>();
             List<Node> closed = new List<Node>();
-            int[] goalState = Helper.GetGoalState(root.Puzzle.Length);
 
             root.g = 0;
             open.Add(root);
             Helper.Loading = true;
 
-            if (root.Goal(goalState))
+            if (root.Goal())
             {
                 result.Iterations = 0;
                 result.Result.SetResult(root);
@@ -34,13 +33,13 @@ namespace Npuzzle
                 closed.Add(current);
                 open.Remove(current);
 
-                current.Expand(goalState);
+                current.Expand();
 
                 for (int i = 0; i < current.Children.Count; i++)
                 {
                     Node child = current.Children[i];
 
-                    if (child.Goal(goalState))
+                    if (child.Goal())
                     {
                         goal = true;
                         result.Result.SetResult(child);
