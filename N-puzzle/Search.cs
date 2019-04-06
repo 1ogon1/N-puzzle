@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace Npuzzle
 {
@@ -13,6 +14,7 @@ namespace Npuzzle
             List<Node> closed = new List<Node>();
 
             root.g = 0;
+            root.h = 0;
             open.Add(root);
             Helper.Loading = true;
 
@@ -29,10 +31,12 @@ namespace Npuzzle
             while (open.Count > 0 && !goal)
             {
                 Node current = open.GetCurrent();
+                //Node current = open.FirstOrDefault();
 
                 closed.Add(current);
                 open.Remove(current);
 
+                //current.Print();
                 current.Expand();
 
                 for (int i = 0; i < current.Children.Count; i++)

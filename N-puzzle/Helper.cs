@@ -8,7 +8,9 @@ namespace Npuzzle
     {
         Equals = 1,
         Manhattan = 2,
-        Euclidean = 3
+        Euclidean = 3,
+        My1 = 4,
+        My2 = 5
     }
 
     public static class Helper
@@ -44,8 +46,17 @@ namespace Npuzzle
         {
             for (int i = 0; i < nodes.Count; i++)
             {
-                if (nodes[i].IsSame(find.Puzzle)) { return true; }
-
+                if (nodes[i].IsSame(find.Puzzle)) 
+                {
+                    if (find.f < nodes[i].f)
+                    {
+                        return false;
+                    }
+                    else
+                    {
+                        return true;
+                    }
+                }
             }
 
             return false;
@@ -101,19 +112,26 @@ namespace Npuzzle
                 }
             }
 
-            for (int i = 0; i < length; i++)
-            {
-                if (result[i] == length)
-                {
-                    result[i] = 0;
-                }
-            }
+            //for (int i = 0; i < length; i++)
+            //{
+            //    if (result[i] == length)
+            //    {
+            //        result[i] = 0;
+            //    }
+            //}
             //result[length - 1] = 0;
 
             //for (int i = 0; i < length - 1; i++)
             //{
             //    result[i] = i + 1;
             //}
+
+            //result = new int[9]
+            //{
+            //    1, 2, 3,
+            //    8, 0, 4,
+            //    7, 6, 5
+            //};
 
             GoalState = result;
             new Node(GoalState).Print();
@@ -234,49 +252,23 @@ namespace Npuzzle
 
             if (Mode == Mode.Equals)
             {
-                for (int i = 0; i < GoalState.Length; i++)
-                {
-                    if (current[i] != GoalState[i] && GoalState[i] != 0)
-                    {
-                        result++;
-                    }
-                }
+                result = GetEquals(current);
             }
             else if (Mode == Mode.Manhattan)
             {
-                for (int i = 0; i < GoalState.Length; i++)
-                {
-                    if (current[i] != 0)
-                    {
-                        var goalPosition = GetGoalPosition(current[i]);
-
-                        var correctX = goalPosition / Columns;
-                        var correctY = goalPosition % Columns;
-
-                        var x = i / Columns;
-                        var y = i % Columns;
-
-                        result += Math.Abs(correctX - x) + Math.Abs(correctY - y);
-                    }
-                }
+                result = GetManhattan(current);
             }
             else if (Mode == Mode.Euclidean)
             {
-                for (int i = 0; i < GoalState.Length; i++)
-                {
-                    if (current[i] != 0)
-                    {
-                        var goalPosition = GetGoalPosition(current[i]);
-
-                        var correctX = goalPosition / Columns;
-                        var correctY = goalPosition % Columns;
-
-                        var x = i / Columns;
-                        var y = i % Columns;
-
-                        result += (correctX - x) * (correctX - x) + (correctY - y) * (correctY - y);
-                    }
-                }
+                result = GetEuclidean(current);
+            }
+            else if (Mode == Mode.My1)
+            {
+                result = GetManhattanEuclidean(current);
+            }
+            else if (Mode == Mode.My2)
+            {
+                result = GetEuclidean(current) + GetEquals(current);
             }
             else
             {
@@ -287,8 +279,98 @@ namespace Npuzzle
             return result;
         }
 
+        private static int GetManhattan(int[] current)
+        {
+            int result = 0;
+
+            for (int i = 0; i < GoalState.Length; i++)
+            {
+                if (current[i] != 0)
+                {
+                    var goalPosition = GetGoalPosition(current[i]);
+
+                    var correctX = goalPosition / Columns;
+                    var correctY = goalPosition % Columns;
+
+                    var x = i / Columns;
+                    var y = i % Columns;
+
+                    result += Math.Abs(x - correctX) + Math.Abs(y - correctY);
+                }
+            }
+
+            return result;
+        }
+
+        private static int GetEuclidean(int[] current)
+        {
+            int result = 0;
+
+            for (int i = 0; i < GoalState.Length; i++)
+            {
+                if (current[i] != 0)
+                {
+                    var goalPosition = GetGoalPosition(current[i]);
+
+                    var correctX = goalPosition / Columns;
+                    var correctY = goalPosition % Columns;
+
+                    var x = i / Columns;
+                    var y = i % Columns;
+
+                    result += (correctX - x) * (correctX - x) + (correctY - y) * (correctY - y);
+                }
+            }
+
+            return result;
+        }
+
+        private static int GetManhattanEuclidean(int[] current)
+        {
+            int result = 0;
+
+            for (int i = 0; i < GoalState.Length; i++)
+            {
+                if (current[i] != 0)
+                {
+                    var goalPosition = GetGoalPosition(current[i]);
+
+                    var correctX = goalPosition / Columns;
+                    var correctY = goalPosition % Columns;
+
+                    var x = i / Columns;
+                    var y = i % Columns;
+
+                    var manhattan = Math.Abs(x - correctX) + Math.Abs(y - correctY);
+                    var eucliden = (correctX - x) * (correctX - x) + (correctY - y) * (correctY - y);
+
+                    result += manhattan + eucliden;
+                }
+            }
+
+            return result;
+        }
+
+        private static int GetEquals(int[] current)
+        {
+            int result = 0;
+
+            for (int i = 0; i < GoalState.Length; i++)
+            {
+                if (current[i] != GoalState[i] && GoalState[i] != 0)
+                {
+                    result++;
+                }
+            }
+
+
+            return result;
+        }
+
         private static int GetGoalPosition(int number)
         {
+            int k = 0;
+
             for (int i = 0; i < GoalState.Length; i++)
             {
                 if (GoalState[i] == number)
@@ -297,7 +379,11 @@ namespace Npuzzle
                 }
             }
 
-            return 0;
+            return k;
         }
     }
 }
+
+// 3, 4, 1,    1 2 3 4 5 6 7 8
+// 0, 2, 6, => --------------- = 13
+// 7, 5, 8     2 1 2 2 1 2 0 3 

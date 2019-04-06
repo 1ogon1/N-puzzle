@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 
@@ -31,11 +33,11 @@ namespace Npuzzle
                         Console.WriteLine("Your puzzle");
                         puzzle.Print();
                         Console.WriteLine("\nPress enter to start...");
-                        Console.ReadLine();
 
                         var search = new Search();
 
                         Helper.InitGoalState(puzzle.Puzzle.Length);
+						Console.ReadLine();
 
                         var start = DateTime.Now;
                         var result = search.ASrat(puzzle);
@@ -53,7 +55,7 @@ namespace Npuzzle
             }
 
             Console.WriteLine("Thank you. Bye");
-            Console.ReadLine();
+            ////Console.ReadLine();
         }
 
         private static Node GetPuzzle(bool firstStep, string medthod, string useFrom, string message, out int mode)
@@ -124,6 +126,13 @@ namespace Npuzzle
                 7, 6, 5
             };
 
+            var puzzle9_8 = new int[9]
+            {
+                6, 1, 5,
+                7, 0, 8,
+                2, 4, 3
+            };
+
             Node puzzle = null;
             bool tryAgain = false;
 
@@ -133,7 +142,9 @@ namespace Npuzzle
                                    "Available medthods is:\n" +
                                    "1 - equals current and final mode\n" +
                                    "2 - Manhattan distance\n" +
-                                   "3 - Euclidean distance");
+                                   "3 - Euclidean distance\n" +
+                                   "4 - Manhattan + Euclidean\n" +
+                                   "5 - Euclidean + current");
                 Console.Write("Choose medthod: ");
                 medthod = Console.ReadLine();
             }
@@ -163,7 +174,7 @@ namespace Npuzzle
                 }
             }
 
-            if (int.TryParse(medthod, out mode) && mode > 0 && mode <= 3 && !tryAgain)
+            if (int.TryParse(medthod, out mode) && mode > 0 && mode <= 5 && !tryAgain)
             {
                 Helper.Mode = (Mode)mode;
 
@@ -195,7 +206,8 @@ namespace Npuzzle
                         //var root = new Node(puzzle9_4);
                         //var root = new Node(puzzle9_5);
                         //var root = new Node(puzzle9_6);
-                        var root = new Node(puzzle9_7);
+                        //var root = new Node(puzzle9_7);
+                        var root = new Node(puzzle9_8);
 
                         puzzle = root;
                     }
@@ -226,6 +238,7 @@ namespace Npuzzle
 
         private static Node GetFromFile(int[] puzzle9_2)
         {
+            Contract.Ensures(Contract.Result<Node>() != null);
             Node puzzle;
 
             var directory = AppContext.BaseDirectory.Replace("\\", "/").Replace("bin/Debug/", "");
@@ -238,19 +251,54 @@ namespace Npuzzle
 
             if (File.Exists(file))
             {
-                var data = File.ReadAllText(file).Split(' ').ToList();
+                int size = 0;
+                int[] initPussle = null;
+                var data = File.ReadLines(file).ToList();
+				var getSize = data.FirstOrDefault();
 
-                var initPussle = new int[data.Count];
+                data.Remove(getSize);
 
-                for (int i = 0; i < data.Count; i++)
+                for (int i = 0; i < getSize.Length; i++)
                 {
-                    if (int.TryParse(data[i], out int element))
+                    if (getSize[i] != '#' && int.TryParse(getSize[i].ToString(), out size))
                     {
-                        initPussle[i] = element;
+                        break;
                     }
                 }
 
-                puzzle = new Node(initPussle);
+                if (size > 0)
+                {
+                    initPussle = new int[size * size];
+                    var k = 0;
+                    foreach (var item in data)
+                    {
+                        var reads = 0;
+                        for (int i = 0; i < item.Length; i++)
+                        {
+                            if (item[i] == '#') { break; }
+
+                            if (item[i] != '\n' && int.TryParse(item[i].ToString(), out int element))
+                            {
+                                initPussle[k++] = element;
+                                reads++;
+                            }
+                        }
+
+                        if (reads > 0 && reads != size)
+                        {
+                            break;
+                        }
+                    }
+                }
+
+                if (initPussle != null)
+                {
+                    puzzle = new Node(initPussle);
+                }
+                else
+                {
+                    return null;
+                }
             }
             else
             {
@@ -277,8 +325,8 @@ namespace Npuzzle
 
                 var initPussle = new int[data.Count];
 
-                Console.WriteLine("data: " + data);
-                Console.WriteLine("data.Count: " + data.Count);
+                //Console.WriteLine("data: " + data);
+                //Console.WriteLine("data.Count: " + data.Count);
 
                 for (int i = 0; i < data.Count; i++)
                 {
